@@ -1,0 +1,354 @@
+{
+  "title": "pcb",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "file": {
+      "type": "string"
+    },
+    "comment": {
+      "type": "string"
+    },
+    "gen": {
+      "type": "object",
+      "properties": {
+        "source": { "type": "string" },
+        "key": { "type": "integer" }
+      }
+    },
+    "layout_area": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 4,
+      "description": "4 values to specify a rectangle (x0,y0,x1,y1), or N * 2 >= 6 values to specify a polygon with N vertices."
+    },
+    "unit": {
+      "type": "array",
+      "items": [
+        { "type": "integer", "minimum": 1, "maximum": 999 },
+        { "type": "integer", "minimum": -9, "maximum": 0 }
+      ],
+      "minItems": 2,
+      "maxItems": 2,
+      "description": "Count and base 10 exponent of unit."
+    },
+    "unit_nm": {
+      "type": "number",
+      "minimum": 0.1,
+      "description": "Equals unit: [resolution_nm, -9]."
+    },
+    "resolution": {
+      "type": "array",
+      "items": [
+        { "type": "integer", "minimum": 1, "maximum": 999 },
+        { "type": "integer", "minimum": -9, "maximum": 0 }
+      ],
+      "minItems": 2,
+      "maxItems": 2,
+      "description": "Count and base 10 exponent of unit."
+    },
+    "resolution_nm": {
+      "type": "number",
+      "minimum": 0.1,
+      "description": "Equals resolution: [resolution_nm, -9]."
+    },
+    "origin": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 2,
+      "maxItems": 2,
+      "description": "Alternative to layout_area, defaults to 0,0."
+    },
+    "size": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 2,
+      "maxItems": 2,
+      "description": "Alternative to layout_area."
+    },
+    "grid_size": {
+      "type": "array",
+      "items": {
+        "type": "integer"
+      },
+      "minItems": 3,
+      "maxItems": 3,
+      "description": "Output only."
+    },
+    "layers": {
+      "oneOf": [
+        {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 16
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": ["", "signal", "power", "ground", "any", "signal|power", "signal|ground", "ground|power"]
+              }
+            },
+            "additionalProperties": true,
+            "description": "Properties like index and name are ignored."
+          },
+          "minItems": 1,
+          "maxItems": 16
+        }
+      ]
+    },
+    "components": {
+      "type": "object",
+      "additionalProperties": { "$ref": "#/definitions/component" }
+    },
+    "nets": {
+      "type": "object",
+      "additionalProperties": { "$ref": "#/definitions/net" }
+    },
+    "pin_positions": {
+      "type": "string",
+      "enum": ["absolute", "relative"],
+      "description": "Defaults to absolute."
+    }
+  },
+  "anyOf": [
+    { "required": ["size"] },
+    { "required": ["layout_area"] }
+  ],
+  "allOf": [
+    { "not": { "required": ["resolution", "resolution_nm"] } },
+    { "not": { "required": ["unit", "unit_nm"] } }
+  ],
+  "additionalProperties": false,
+
+  "definitions": {
+    "shape": {
+      "type": "array",
+      "items": [
+        { "type": "string", "enum": ["circle", "rect_iso", "wide_segment", "polygon"] },
+        { "type": ["number", "array"] }
+      ],
+      "additionalItems": { "type": "number" },
+      "minItems": 2,
+      "maxItems": 7,
+      "description": "Numbers can be: radius|radius,x,y|width,height|x0,y0,x1,y1|x0,y0,x1,y1,z,w and array must be [x0,y0,x1,y1,...,xN,yN]."
+    },
+    "component": {
+      "type": "object",
+      "properties": {
+        "pos": {
+          "type": "array",
+          "items": { "type": "number" },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "center": {
+          "type": "array",
+          "items": { "type": "number" },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "pins": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/definitions/pin" }
+        },
+        "z": {
+          "type": "integer",
+          "minimum": -1
+        },
+        "shape": { "$ref": "#/definitions/shape" },
+        "clearance": {
+          "type": "number",
+          "minimum": 0.0
+        },
+        "can_route": { "type": "boolean", "description": "Default false." },
+        "via_ok": { "type": "boolean", "description": "Default true." }
+      },
+      "anyOf": [
+        { "required": ["center"] },
+        { "required": ["pos"] }
+      ],
+      "not": {
+        "required": ["center", "pos"]
+      },
+      "additionalProperties": false
+    },
+    "pin": {
+      "type": "object",
+      "properties": {
+        "center": {
+          "type": "array",
+          "items": { "type": "number" },
+          "minItems": 2,
+          "maxItems": 2,
+          "description": "Implicitly makes the shape anchor point (0.5, 0.5). For shapes with absolute vertex positions, this must coincide with the shape's center."
+        },
+        "pos": {
+          "type": "array",
+          "items": { "type": "number" },
+          "minItems": 2,
+          "maxItems": 2,
+          "description": "Implicitly makes the shape anchor point (0, 0). For shapes with absolute vertex positions, this must coincide with the lower left corner of their bounding box."
+        },
+        "z": {
+          "oneOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "minimum": -1
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            {
+              "type": "integer",
+              "minimum": -1
+            }
+          ]
+        },
+        "shape": { "$ref": "#/definitions/shape" },
+        "clearance": { "type": "number", "minimum": 0 },
+        "net": { "type": ["string","null"], "description": "IGNORED" },
+        "connects_to": { "type": "array", "description": "IGNORED" },
+        "compound": { "type": "array", "items": { "type": "string" } }
+      },
+      "anyOf": [
+        { "required": ["center"] },
+        { "required": ["pos"] }
+      ],
+      "not": {
+        "required": ["center", "pos"]
+      },
+      "additionalProperties": false
+    },
+    "net": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["", "signal", "power", "ground", "any"]
+        },
+        "track_width": {
+          "type": "number",
+          "minimum": 0
+        },
+        "via_diameter": {
+          "type": "number",
+          "minimum": 0
+        },
+        "clearance": {
+          "type": "number",
+          "minimum": 0
+        },
+        "pins": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "connections": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "net": { "type": "string" },
+              "src": { "$ref": "#/definitions/point25" },
+              "dst": { "$ref": "#/definitions/point25" },
+              "src_pin": { "type": ["string", "null"] },
+              "dst_pin": { "type": ["string", "null"] },
+              "clearance": { "type": "number" },
+              "cluster": { "type": "number", "minimum": 0 },
+              "tracks": {
+                "type": "array",
+                "items": { "$ref": "#/definitions/track" }
+              },
+              "min_len": { "type": "number", "minimum": 0 }
+            },
+            "anyOf": [
+              { "required": ["src_pin", "dst_pin"] },
+              { "required": ["src_pin", "dst"] },
+              { "required": ["src", "dst_pin"] },
+              { "required": ["src", "dst"] }
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "path": {
+      "type": "array",
+      "minItems": 2,
+      "items": { "$ref": "#/definitions/point25" }
+    },
+    "track": {
+      "type": "object",
+      "properties": {
+        "start": { "$ref": "#/definitions/point25" },
+        "end": { "$ref": "#/definitions/point25" },
+        "width": { "type": "number", "minimum": 0 },
+        "length": { "type": "number", "minimum": 0 },
+        "via_diam": { "type": "number", "minimum": 0 },
+        "vias": { "type": "array", "items": { "$ref": "#/definitions/via" } },
+        "segments": { "type": "array", "items": { "$ref": "#/definitions/segment" } },
+        "path": { "$ref": "#/definitions/path" }
+      },
+      "additionalProperties": false
+    },
+    "via": {
+      "type": "object",
+      "properties": {
+        "min_layer": { "type": "integer" },
+        "max_layer": { "type": "integer" },
+        "pos": { "$ref": "#/definitions/point2" },
+        "radius": { "type": "number", "minimum": 0 }
+      },
+      "additionalProperties": false
+    },
+    "segment": {
+      "type": "array",
+      "items": [
+        { "type": "number" },
+        { "type": "number" },
+        { "type": "number" },
+        { "type": "number" },
+        { "type": "integer" },
+        { "type": "number", "minimum": 0 }
+      ],
+      "minItems": 6,
+      "maxItems": 6,
+      "description": "x0,y0,x1,y1,z,w"
+    },
+    "point2": {
+      "type": "array",
+      "items": [
+        { "type": "number" },
+        { "type": "number" }
+      ],
+      "minItems": 2,
+      "maxItems": 2
+    },
+    "point25": {
+      "type": "array",
+      "items": [
+        { "type": "number" },
+        { "type": "number" },
+        { "type": "integer", "minimum": -1 }
+      ],
+      "minItems": 3,
+      "maxItems": 3
+    }
+  }
+}

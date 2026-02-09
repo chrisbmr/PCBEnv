@@ -1,0 +1,173 @@
+{
+  "title": "Settings",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "AStarViaCostFactor": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 32767,
+      "description": "Default value used in A-star costs."
+    },
+    "AgentTimeoutSeconds": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Default timeout for env.run_auto()."
+    },
+    "MaxGridSize_Cells": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 2147483647,
+      "description": "Maximum number of grid cells allowed in the NavGrid."
+    },
+    "MaxGridSize_MiB": {
+      "type": "number",
+      "minimum": 1,
+      "description": "Maximum memory size of the NavGrid in mebibytes."
+    },
+    "UserInterface": {
+      "type": "object",
+      "properties": {
+        "Enable": {
+          "type": "boolean"
+        },
+        "FPS": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 240,
+          "description": "FPS limiter."
+        },
+        "VSync": {
+          "type": "boolean"
+        },
+        "WindowSize": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 4096
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "PaneWidth": {
+          "type": "integer",
+          "minimum": 128,
+          "maximum": 1024
+        },
+        "PointSize": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 4096,
+          "description": "For drawing NavPoints."
+        },
+        "Slowdown": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10000000,
+          "description": "Delay in microseconds for each action and for each node expansion in A-star."
+        },
+        "LockSteppingGranularity": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10
+        },
+        "VisibleElements": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["Footprints", "!Footprints",
+                     "GridLines", "!GridLines",
+                     "GridPoints", "!GridPoints",
+                     "RatsNest", "!RatsNest",
+                     "Triangulation", "!Triangulation",
+                     "RoutePreview", "!RoutePreview"]
+          },
+          "uniqueItems": true
+        }
+      }
+    },
+    "LogFiles": {
+      "type": "object",
+      "properties": {
+        "E": { "type": "string" },
+        "W": { "type": "string" },
+        "N": { "type": "string" },
+        "I": { "type": "string" },
+        "D": { "type": "string" },
+        "T": { "type": "string" }
+      },
+      "additionalProperties": false,
+      "description": "Target files for each logging level. May be cout and cerr."
+    },
+    "LogLevel": {
+      "type": "string",
+      "enum": ["E","W","N","I","D","T"],
+      "description": "Default logging level. Call also be set via the LOGV (e.g. LOGV=e) environment variable."
+    },
+    "Paths": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 0,
+      "uniqueItems": true,
+      "description": "Resource paths. Don't use this."
+    },
+    "Reward": {
+      "type": "object",
+      "properties": {
+        "AnyDisconnect": {
+          "type": "number"
+        },
+        "PerDisconnect": {
+          "type": "number"
+        },
+        "PerVia": {
+          "type": "number"
+        }
+      },
+      "description": "Default reward specification (as returned by step())."
+    },
+    "Colors": {
+      "type": "object",
+      "properties": {
+        "Components": { "$ref": "#/definitions/Color2LineFill" },
+        "Pins+Net": { "$ref": "#/definitions/Color2LineFill" },
+        "Pins-Net": { "$ref": "#/definitions/Color2LineFill" },
+        "Nets": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string" }
+        },
+        "Tracks": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string" }
+        },
+        "PowerNets": { "type": "string" },
+        "GroundNets": { "type": "string" }
+      },
+      "required": ["Components", "Pins+Net", "Pins-Net"],
+      "additionalProperties": false,
+      "description": "Colors components footprints, pins, rat's nest lines, and tracks for each layer."
+    }
+  },
+
+  "definitions": {
+    "Color2LineFill": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": {
+        "type": "object",
+        "properties": {
+          "line": { "type": "string" },
+          "fill": { "type": "string" }
+        },
+        "required": ["line", "fill"],
+        "additionalProperties": false
+      }
+    }
+  }
+}

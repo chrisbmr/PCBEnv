@@ -1,0 +1,7 @@
+build/
+__pycache__/
+compile_commands.json
+Dependencies/*.zip
+Dependencies/*.tar.*
+pcbenv/EnvPCB.py
+pcbenv/_LibEnvPCB.so

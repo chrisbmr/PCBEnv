@@ -1,0 +1,2 @@
+graft pcbenv/data
+include pcbenv/_LibPCBEnv.so

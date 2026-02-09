@@ -1,0 +1,203 @@
+{
+  "title": "task",
+  "type": "object",
+  "properties": {
+    "pdes": {
+      "type": "string",
+      "description": "Path to the design file (.json or .kicad_pcb)."
+    },
+    "json": {
+      "type": "string",
+      "description": "The design file as a JSON string."
+    },
+
+    "load_tracks": {
+      "anyOf": [
+        { "type": "boolean" },
+        { "type": "array", "items": { "type": "string" } }
+      ],
+      "default": false,
+      "description": "Load tracks from the design file for the specified nets, or all nets if set to true."
+    },
+
+    "lock_routed": {
+      "type": "boolean",
+      "default": false,
+      "description": "Lock connections that have any tracks on loading. If load_tracks is false, this has no effect."
+    },
+
+    "rectify_degrees": {
+      "type": "number",
+      "minimum": 0,
+      "exclusiveMaximum": 45,
+      "description": "Align segments at less than the specified angle with the x- or y-axis with that axis."
+    },
+
+    "no_polygons": {
+      "type": "boolean",
+      "default": false,
+      "description": "Convert polygon shapes to their bounding boxes."
+    },
+
+    "autocreate_connections": {
+      "type": "boolean",
+      "default": true,
+      "description": "Create connections between pins where no topology is specified."
+    },
+
+    "net_topologies": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "anyOf": [
+              { "type": "string" },
+              { "$ref": "#/$defs/coord25d" }
+            ],
+            "description": "pin-reference or 2.5d coordinate"
+          }
+        }
+      },
+      "description": "Establish net topologies by defining series of connections. Format: { net-name: [[pin-ref, pin-ref or (x,y,z), ...], ...] }"
+    },
+
+    "net_overrides": {
+      "type": "object",
+      "properties": {
+        "trace_widths_um": { "$ref": "#/$defs/rule_overrides" },
+        "via_diameters_um": { "$ref": "#/$defs/rule_overrides" },
+        "clearances_um": { "$ref": "#/$defs/rule_overrides" }
+      },
+      "description": "Override trace widths, via diameters, and clearance rules. Specified in micrometers. Format: { 'object': { number: number, net-name: number } }"
+    },
+
+    "max_layers": {
+      "type": "integer",
+      "minimum": 1
+    },
+
+    "state_representation": {
+      "type": "object",
+      "properties": {
+        "default": {
+          "type": "string",
+          "description": "State representation returned by env.step(action)."
+        },
+        "image_size": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": { "type": "integer" },
+          "description": "Default size for the image state representation."
+        },
+        "grid_box": {
+          "$ref": "#/$defs/bbox3i" },
+          "description": "3d integer bounding box ((xmin,ymin,zmin),(zmax,ymax,zmax)) specifying the part of the grid that is captured by the image representation by default."
+        }
+      }
+    },
+
+    "resolution_nm": {
+      "anyOf": [
+        { "type": "number", "exclusiveMinimum": 0 },
+        { "type": "string", "enum": ["design", "auto"] }
+      ],
+      "default": "auto",
+      "description": "The resolution of the grid and internal units in nanometers. For DSN files, 'design' uses the resolution specified in the design file. 'auto' keeps the number of grid cells below 1024x1024x8 and the 2d size above 128x128, and otherwise tries to ensure that the smallest pin spans at least 2x2 cells."
+    },
+
+    "min_clearance": {
+      "type": "number",
+      "description": "Board-wide minimum clearance in micrometers."
+    },
+
+    "min_trace_width": {
+      "type": "number",
+      "description": "Board-wide minimum track width in micrometers."
+    },
+
+    "fixed_track_params": {
+      "type": "boolean",
+      "default": false,
+      "description": "Force trace widths, via diameters, and clearances to the values specified in min_trace_width, min_via_diam, and min_clearance. The defaults are 1, 1, and 0 grid cells."
+    },
+
+    "min_via_diam": {
+      "type": "number",
+      "description": "Board-wide minimum via diameter in micrometers."
+    },
+
+    "min_margin": {
+      "type": "number",
+      "description": "Minimum size of the layout area beyond the bounding box around the components. Positive values are treated as absolute, negative values as fractions of the maximum of the bbox's width and height."
+    },
+    "max_margin": {
+      "type": "number",
+      "description": "See min_margin."
+    },
+
+    "connections": {
+      "type": "array",
+      "items": {
+        "type": "array",
+        "minItems": 2,
+        "maxItems": 2,
+        "items": { "type": "string" }
+      },
+      "description": "If this property is present, delete all connections and nets not listed (this is applied after autocreate_connections and net_topologies)."
+    },
+    "nets": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "If this property is present, delete all nets not listed."
+    },
+    "pins": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Remove all pins not listed, and all nets that are subsequently empty, but not the components."
+    },
+    "components": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Remove all components not listed, and all nets that are subsequently empty."
+    }
+  },
+  "anyOf": [
+    { "required": ["pdes"] },
+    { "required": ["json"] }
+  ],
+
+  "$defs": {
+    "coord25d": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "items": [
+        { "type": "number" },
+        { "type": "number" },
+        { "type": "integer" }
+      ]
+    },
+    "rule_overrides": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "number"
+      },
+      "description": "In Python, the keys may be numbers or net names."
+    },
+    "bbox3i": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": {
+        "type": "array",
+        "minItems": 3,
+        "maxItems": 3,
+        "items": { "type": "integer" } 
+      }
+    }
+  }
+}

@@ -1,0 +1,120 @@
+[
+  {
+    "name": "grid",
+    "desc": "The state of the routing grid in the form of a 3D uint16 NumPy array of the grid cell flags.",
+    "bits": [["BLOCKED_TEMPORARY", "blockages other than pins or tracks"],
+             ["BLOCKED_PERMANENT", "holes in the board etc."],
+             ["NO_VIAS", "vias not permitted"],
+             ["INSIDE_PIN", "cells covered by a pin [without clearance]"],
+             ["INSIDE_COMPONENT", "cells inside a component footprint"],
+             ["PIN_TRACK_CLEARANCE", "keepout area for tracks stemming from pins"],
+             ["PIN_VIA_CLEARANCE", "keepout area for vias stemming from pins"],
+             ["ROUTE_TRACK_CLEARANCE", "keepout area for tracks stemming from other tracks"],
+             ["ROUTE_VIA_CLEARANCE", "keepout area for vias stemming from other tracks"],
+             ["SOURCE", "for use by A-star"],
+             ["TARGET", "for use by A-star"],
+             ["ROUTE_GUARD", "user defined blockage to guide A-star"]],
+    "args": "A 3D integer bounding box of grid coordinates `((xmin,ymin,zmin),(xmax,ymax,zmax))`, or `None` for the whole grid.",
+    "demo": [
+      "env.get_state({'grid': None})",
+      "env.get_state({'grid': ((0,0,0),(8,8,0))})"
+    ]
+  },
+
+  {
+    "name": "ends",
+    "desc": "A 2D NumPy float32 array of shape `(N,6)` specifying the 2 endpoints `(x0,y0,z0,x1,y1,z1)` of all `N` connections on the board.",
+    "args": "None",
+    "demo": "env.get_state({'env': None})"
+  },
+
+  {
+    "name": "features",
+    "desc": "Return a set of features for each connection of the board. See [feature description](/doc/API.md#hand-crafted-state-features).",
+    "args": "`None` or `{ 'as_dict': boolean }` to specify whether to return a dictionary or a NumPy array. Defaults to NumPy.",
+    "demo": [
+      "env.get_state({'features': None})",
+      "env.get_state({'features': {'as_dict': True}})"
+    ]
+  },
+
+  {
+    "name": "metric",
+    "desc": "Compute a board metric.",
+    "args": [
+      [
+        "'ratsnest_crossings'"
+      ],
+      [
+        "'ratsnest_crossings'",
+        "an iterable of net names"
+      ]
+    ],
+    "demo": [
+      "env.get_state({'metric': 'ratsnets_crossings'})",
+      "env.get_state({'metric': ('ratsnets_crossings', {'Net1', 'Net2'})})"
+    ]
+  },
+
+  {
+    "name": "clearance_check",
+    "desc": "Check specified items for clearance violations (track-track or track-pin) with all items on the board (except for pins without nets).",
+    "args": "A dictionary specifying objects, a limit, and whether to check in 2D or 3D: `{'nets': [...], 'components': [...], 'pins': [...], 'connections': [...], '2d': boolean, 'limit': int}`. All members may be omitted. Nets and components are converted to connections, pins must be listed explicitly.",
+    "demo": [
+      "env.get_state({'clearance_check': {'nets': ['GND']}})"
+    ],
+    "rets": "A list of clearance violations: `[{'x': (x,y,z), 'connections': (connection-ref 1, connection-ref 2 or None), 'pin': pin-ref }, ...]`. The indicated point will be near the violation but may not be exact."
+  },
+
+  {
+    "name": "track",
+    "desc": "Get the tracks for a list of connections.",
+    "args": "List of connection-refs.",
+    "demo": "env.get_state({'track': [('IC1-A','IC2-A'), ('IC1-B','IC2-B')]})",
+    "rets": "A list (for connections) of lists (for their tracks): `[[{'segments': NumPy array, 'vias': Numpy array}]]`"
+  },
+
+  {
+    "name": "raster",
+    "desc": "Get the grid cells occupied by the center line of a connection's tracks, for a list of connections.",
+    "args": "List of connection-refs",
+    "demo": "env.get_state({'raster': [('IC1-A','IC2-A'), ('IC1-B','IC2-B')]})",
+    "rets": "A list (for connections) of lists (for their tracks) of Numpy arrays of point coordinates: `[[np.array([[x0,y0,z0], [x1,y1,z1], ...])]]`"
+  },
+
+  {
+    "name": "board",
+    "desc": "Get a dictionary representation of the board in the same format as the [JSON specification](/pcbenv/data/pcb.schema.json) (except some items may be tuples or NumPy arrays instead of lists).",
+    "args": "Integer recursion depth. For instance, if this is 0, only net names rather than their properties are returned.",
+    "demo": "env.get_state({'board': 1})"
+  },
+
+  {
+    "name": "select",
+    "desc": "Select a list of items that intersect with either a bounding box or point.",
+    "args": "`{ 'object': 'pin' | 'component', 'box': ((xmin,ymin,zmin),(xmax,ymax,zmax)), 'pos': (x,y,z) }`.\n\nIf `'box'` is specified, `'pos'` is ignored. Throws an exception if `'object'` is missing or both `'pos'` and `'box'` are missing.",
+    "demo": [
+      "env.get_state({'select': {'object': 'pin', 'pos': (10,10,0) }})",
+      "env.get_state({'select': {'object': 'com', 'pos': (10,10,0) }})",
+      "env.get_state({'select': {'object': 'pin', 'box': ((10,10,0),(10,10,1)) }})"
+    ],
+    "rets": "A list of object names."
+  },
+
+  {
+    "name": "image_draw|image_grid",
+    "desc": "Return an [image representation](/doc/API.md#image-representation) of the board as described in the respective section. The image is either rasterized directly to the image or obtained by downscaling the current grid. The expansions for A-star are set to 0 for this, but note that each object's own clearance area is still included. All arguments are optional. NOTE: Parameters are remembered for subsequent calls (for `draw` and `grid` separately).",
+    "args": {
+      "bbox": "The source region of for the image as a 2D box `((xmin,ymin),(xmax,ymax))`.",
+      "size": "The size of the image as `(int,int)`. This is used only if `max_size` is set to `(0,0)`. If specified, must be `>= (1,1)`. The returned image array will never be larger than the grid size.",
+      "max_size": "The maximum size of the image as `(int,int)`. The source area is downscaled to this size or less (see `max_scale`) if the grid area would not fit.",
+      "max_scale": "The maximum scale of the source area. Must be > 0 and <= 1. Does not apply if `max_size` is 0.",
+      "min_scale": "The minimum scale of the source area. If `max_size` requires a scale lower than this, an exception is triggered. Must be >= 0 and `<= max_scale`.",
+      "crop_auto": "If this is a number `m >= 0`, the bbox is set to the bounding box around all tracks expanded by `m` times its maximum dimension. Set to `True` for `m = 0`, or `False` to disable auto-cropping."
+    },
+    "demo": [
+      "env.get_state({'image_grid': {'crop_auto': 1/16, 'min_scale': 0.125, 'max_scale': 0.5, 'max_size': (384,384)}})",
+      "env.get_state({'image_draw': {'bbox': ((0,0),(1024,1024)), 'size': (1024,1024)})"
+    ]
+  }
+]

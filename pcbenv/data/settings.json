@@ -1,0 +1,76 @@
+{
+  "MaxGridSize_Cells": 67108864,
+  "MaxGridSize_MiB": 4096,
+
+  "AStarViaCostFactor" : 8.0,
+
+  "AgentTimeoutSeconds": 600,
+
+  "UserInterface": {
+    "Enable": true,
+    "FPS": 40,
+    "VSync": true,
+    "WindowSize": [1280, 800],
+    "PointSize": 0.25,
+    "PaneWidth": 256,
+    "Slowdown": 0,
+    "LockSteppingGranularity": 0,
+    "VisibleElements": ["Footprints", "RatsNest", "RoutePreview"]
+  },
+
+  "Reward": {
+    "PerVia": -0.125,
+    "PerDisconnect": -5.0,
+    "AnyDisconnect": 0
+  },
+
+  "Paths": [],
+
+  "LogFiles": {
+    "E": "cerr",
+    "W": "cerr",
+    "N": "cout",
+    "I": "cout",
+    "D": "cout",
+    "T": "cout"
+  },
+  "LogLevel": "I",
+
+  "Colors": {
+    "Components": [
+      {"line": "ff00", "fill": "0"},
+      {"line": "f00f", "fill": "0"}
+    ],
+    "Pins+Net": [
+      {"line": "0", "fill": "f00f"},
+      {"line": "0", "fill": "f00f"}
+    ],
+    "Pins-Net": [
+      {"line": "0", "fill": "ffff"},
+      {"line": "0", "fill": "ffff"}
+    ],
+    "PowerNets": "f0ff",
+    "GroundNets": "f888",
+    "Nets": [
+      "ffff"
+    ],
+    "Tracks": [
+      "ff00e0ff",
+      "ff0078ff",
+      "ff0028ff",
+      "ff00ff80",
+      "ff80ff00",
+      "ffd8ff00",
+      "ffff00d8",
+      "ffff00a4",
+      "ffff0083",
+      "ff45ba8a",
+      "ffe8e8e8",
+      "ff63a1d2",
+      "ff77e1f3",
+      "ffd698a5",
+      "fff4a4ff",
+      "ff866f8b"
+    ]
+  }
+}
