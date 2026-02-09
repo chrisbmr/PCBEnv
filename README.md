@@ -22,7 +22,7 @@ UI Controls
 Installation (Linux)
 --------------------
 0. Check dependencies section.
-1. git clone ...
+1. git clone https://github.com/chrisbmr/PCBEnv.git
 2. cd PCBEnv
 3. pip install .
 
