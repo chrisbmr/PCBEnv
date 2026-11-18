@@ -1,11 +1,12 @@
 [build-system]
-requires = ["scikit-build-core>=0.8", "swig", "numpy"]
+requires = ["scikit-build-core>=0.10", "swig", "numpy"]
 build-backend = "scikit_build_core.build"
 
 [project]
 name = "pcbenv"
 version = "2026.1.0"
 requires-python = ">=3.7"
+dependencies = ["importlib_resources", "numpy"]
 authors = [
   {name = "Christoph Bumiller", email = "fluegelklang@gmail.com"}
 ]
@@ -25,4 +26,4 @@ classifiers = [
 
 [tool.scikit-build]
 wheel.packages = ["pcbenv"]
-cmake.verbose = true
+build.verbose = true
