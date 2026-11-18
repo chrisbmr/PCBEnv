@@ -455,11 +455,10 @@ inline void NavCounterROP::writeRangeZYX(uint Z0, uint Z1, uint Y0, uint Y1, uin
 // cccc|---*---|ccccCC            w/2=4.5 clearance=4
 //            CCCCCC|--*--|CCCCCC w/2=3.5 Clearance=6
 //                  !!
-// This should result in violation area = 2 so we have to rasterize the track without clearance.
+// This should result in violation area = 2 so we have to rasterize the segments and vias without expanding by clearance.
+// However, clearance should still be included in the rasterization of obstacles.
 Real NavGrid::sumViolationArea(const Connection &X)
 {
-    setSpacings(NavSpacings(DesignRules(0,0,0)));
-
     Rasterizer<NavCounterROP> R(*this);
     R.OP.setTarget(*this);
 
